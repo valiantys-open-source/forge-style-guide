@@ -18,18 +18,18 @@ It is a goal for this style guide to build upon the already strong community tha
 
 <table id="teamTable">
   <tr>
-    <td><img src="./team/paul-spears.png" alt="Paul Spears" width="150"></td>
-    <td><img src="./team/conner-mcneil.png" alt="Conner McNeil" width="150"></td>
+    <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
     <td><img src="./team/joshua-demetri.png" alt="Joshua Demetri" width="150"></td>
     <td><img src="./team/zachary-kipping.png" alt="Zachary Kipping" width="150"></td>
-    <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
+    <td><img src="./team/paul-spears.png" alt="Paul Spears" width="150"></td>
+    <td><img src="./team/conner-mcneil.png" alt="Conner McNeil" width="150"></td>
   </tr>
   <tr>
-    <td><b>Paul Spears</b><br>Head of R&D and Solution Architecture</td>
-    <td><b>Conner McNeil</b><br>Head of Platform Development</td>
+    <td><b>Zishan Aslam</b><br>Software Architect</td>
     <td><b>Joshua Demetri</b><br>Principal Solutions Architect</td>
     <td><b>Zachary Kipping</b><br>R&D Manager</td>
-    <td><b>Zishan Aslam</b><br>Software Architect</td>
+    <td><b>Paul Spears</b><br>Head of R&D and Solution Architecture</td>
+    <td><b>Conner McNeil</b><br>Head of Platform Development</td>
   </tr>
 </table>
 
