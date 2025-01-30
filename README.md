@@ -16,33 +16,22 @@ It is a goal for this style guide to build upon the already strong community tha
 
 ## The Team
 
-<div class="team-grid">
-  <div class="team-member">
-    <img src="./team/paul-spears.png" alt="Paul Spears"><br>
-    <b>Paul Spears</b>
-    <p>Head of Engineering</p>
-  </div>
-  <div class="team-member">
-    <img src="./team/conner-mcneil.png" alt="Conner McNeil"><br>
-    <b>Conner McNeil</b>
-    <p>Head of Custom Solutions</p>
-  </div>
-  <div class="team-member">
-    <img src="./team/joshua-demetri.png" alt="Joshua Demetri"><br>
-    <b>Joshua Demetri</b>
-    <p>Software Development Manager</p>
-  </div>
-  <div class="team-member">
-    <img src="./team/zachary-kipping.png" alt="Zachary Kipping"><br>
-    <b>Zachary Kipping</b>
-    <p>Engineering Manager</p>
-  </div>
-  <div class="team-member">
-    <img src="./team/zishan-aslam.jpg" alt="Zishan Aslam"><br>
-    <b>Zishan Aslam</b>
-    <p>Software Architect</p>
-  </div>
-</div>
+<table id="teamTable">
+  <tr>
+    <td><img src="./team/paul-spears.png" alt="Paul Spears" width="150"></td>
+    <td><img src="./team/conner-mcneil.png" alt="Conner McNeil" width="150"></td>
+    <td><img src="./team/joshua-demetri.png" alt="Joshua Demetri" width="150"></td>
+    <td><img src="./team/zachary-kipping.png" alt="Zachary Kipping" width="150"></td>
+    <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
+  </tr>
+  <tr>
+    <td><b>Paul Spears</b><br>Head of Engineering</td>
+    <td><b>Conner McNeil</b><br>Head of Custom Solutions</td>
+    <td><b>Joshua Demetri</b><br>Principal Solutions Architect</td>
+    <td><b>Zachary Kipping</b><br>Engineering Manager</td>
+    <td><b>Zishan Aslam</b><br>Software Architect</td>
+  </tr>
+</table>
 
 ## Table of Contents
 
@@ -793,24 +782,3 @@ console.log(preferences); // Output: { theme: 'dark', notificationsEnabled: true
 ## Contact
 
 If you have any feedback, questions, or ideas regarding this style guide, feel free to reach out via email. We'd love to hear from you! [forge@valiantys.com](mailto:forge@valiantys.com)
-
-<style>
-  green {
-    color: green;
-  }
-  red {
-    color: red;
-  }
-  .team-grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    gap: 25px;
-    text-align: center;
-  }
-  .team-grid img {
-    width: 100%;
-    border: 2px solid black;
-    border-radius: 16px;
-  }
-</style>
