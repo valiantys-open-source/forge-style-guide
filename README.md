@@ -25,10 +25,10 @@ It is a goal for this style guide to build upon the already strong community tha
     <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
   </tr>
   <tr>
-    <td><b>Paul Spears</b><br>Head of Engineering</td>
-    <td><b>Conner McNeil</b><br>Head of Custom Solutions</td>
+    <td><b>Paul Spears</b><br>Head of R&D and Solution Architecture</td>
+    <td><b>Conner McNeil</b><br>Head of Platform Development</td>
     <td><b>Joshua Demetri</b><br>Principal Solutions Architect</td>
-    <td><b>Zachary Kipping</b><br>Engineering Manager</td>
+    <td><b>Zachary Kipping</b><br>R&D Manager</td>
     <td><b>Zishan Aslam</b><br>Software Architect</td>
   </tr>
 </table>
