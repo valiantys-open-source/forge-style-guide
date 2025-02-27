@@ -59,11 +59,11 @@ One of the most important aspects of having easy-to-read and debug code is to ke
 
 ```typescript
 // src/triggers/web/multi-functions.ts
-export async function handleWebTrigger(event: any): Promise<void> {
+export async function handleWebTrigger(event: WebTriggerRequest): Promise<void> {
   console.log("Handling web trigger:", event);
 }
 
-export async function handleSecondWebTrigger(event: any): Promise<void> {
+export async function handleSecondWebTrigger(event: WebTriggerRequest): Promise<void> {
   console.log("Handling second web trigger:", event);
 }
 ```
@@ -74,14 +74,14 @@ This example includes two functions in one file, violating the single-purpose ru
 
 ```typescript
 // src/triggers/web/handleWebTrigger.ts
-export async function handleWebTrigger(event: any): Promise<void> {
+export async function handleWebTrigger(event: WebTriggerRequest): Promise<void> {
   console.log("Handling web trigger:", event);
 }
 ```
 
 ```typescript
 // src/triggers/web/handleSecondWebTrigger.ts
-export async function handleSecondWebTrigger(event: any): Promise<void> {
+export async function handleSecondWebTrigger(event: WebTriggerRequest): Promise<void> {
   console.log("Handling second web trigger:", event);
 }
 ```
@@ -200,14 +200,14 @@ In the manifest file, you often need to specify a path to a function in your cod
 
 ```typescript
 // src/backend/web-func-name.forge.ts
-export async function handleWebFunction(event: any): Promise<void> {
+export async function handleWebFunction(event: WebTriggerRequest): Promise<void> {
   console.log("Handling web trigger:", event);
 }
 ```
 
 ```typescript
 // src/backend/web-2nd-func-name.forge.ts
-export async function handleSecondWebFunction(event: any): Promise<void> {
+export async function handleSecondWebFunction(event: WebTriggerRequest): Promise<void> {
   console.log("Handling second web trigger:", event);
 }
 ```
@@ -223,14 +223,14 @@ export async function handleScheduledFunction(event: any): Promise<void> {
 
 ```typescript
 // src/backend/web-func-name.forge.ts
-export async function handleWebFunction(event: any): Promise<void> {
+export async function handleWebFunction(event: WebTriggerRequest): Promise<void> {
   console.log("Handling web trigger:", event);
 }
 ```
 
 ```typescript
 // src/backend/web-2nd-func-name.forge.ts
-export async function handleSecondWebFunction(event: any): Promise<void> {
+export async function handleSecondWebFunction(event: WebTriggerRequest): Promise<void> {
   console.log("Handling second web trigger:", event);
 }
 ```
@@ -466,13 +466,15 @@ import { createUser } from "./web-users-create-user";
 import { updateUser } from "./web-users-update-user";
 import { deleteUser } from "./web-users-delete-user";
 
-export async function handleUsersApi(event: any): Promise<void> {
-  if (!event.path.startsWith("/users")) {
+export async function handleUsersApi(event: WebTriggerRequest): Promise<void> {
+  const path = event.queryParameters?.path?.join("") ?? "";
+
+  if (!path.startsWith("users")) {
     // Throw an error
     return;
   }
 
-  const userId = event.path.split("/").pop();
+  const userId = path.includes("/") ? path.split("/").pop() : undefined;
 
   switch (event.method) {
     case "GET":
@@ -480,10 +482,10 @@ export async function handleUsersApi(event: any): Promise<void> {
       return getAllUsers();
 
     case "POST":
-      return createUser();
+      return createUser(event.body);
 
     case "PUT":
-      return updateUser(userId);
+      return updateUser(userId, event.body);
 
     case "DELETE":
       return deleteUser(userId);
@@ -649,12 +651,15 @@ definitions:
 ## Security Measures
 
 - **<red>Avoid</red>** hard-coding sensitive details. Use Forge Variables.
+- **<green>Do</green>** use encrypted Forge environment variables
 
 ```bash
 forge variables set MY_API_KEY "your-api-key-here"
+# Encrypted variables
+forge variables set MY_API_KEY "your-api-key-here" --encrypt
 ```
 
-- **<green>Do</green>** have authorization header checks on all web trigger handlers.
+- **<green>Do</green>** have authorization header checks on all web trigger handlers. Highly suggest secure ways to generate secrets like implementing an asymmetric authentication method.
 
 ```typescript
 export async function handleWebTrigger(event) {
@@ -669,10 +674,20 @@ export async function handleWebTrigger(event) {
 }
 ```
 
-- **<green>Do</green>** validate input data to prevent injection attacks (e.g., SQL injection, NoSQL injection).
+- **<green>Do</green>** validate input data to handle invalid data.
 
 ```typescript
 import Joi from "joi";
+
+// This is just an example, please feel free to use any preferred library for your team.
+const schema = Joi.object({
+    username: Joi.string()
+        .alphanum()
+        .min(3)
+        .max(30)
+        .required()
+});
+
 
 export async function handleWebTrigger(event) {
   const { error } = schema.validate(JSON.parse(event.body));
@@ -706,6 +721,7 @@ permissions:
     - write:jira-work
 ```
 
+- **<green>Do</green>** validate input data to prevent injection attacks (e.g., SQL injection, NoSQL injection).
 - **<green>Do</green>** implement rate limiting on web triggers to mitigate Denial-of-Service (DoS) attacks.
 - **<green>Do</green>** log important security-related events (e.g., failed authorization attempts) securely. Use logging libraries to track unusual activities, but ensure logs don’t contain sensitive information like passwords or API keys.
 
