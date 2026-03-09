@@ -21,8 +21,6 @@ It is a goal for this style guide to build upon the already strong community tha
     <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
     <td><img src="./team/joshua-demetri.png" alt="Joshua Demetri" width="150"></td>
     <td><img src="./team/zachary-kipping.png" alt="Zachary Kipping" width="150"></td>
-    <td><img src="./team/paul-spears.png" alt="Paul Spears" width="150"></td>
-    <td><img src="./team/conner-mcneil.png" alt="Conner McNeil" width="150"></td>
   </tr>
   <tr>
     <td><b>Zishan Aslam</b><br>Software Architect</td>
