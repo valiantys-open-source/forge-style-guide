@@ -1,0 +1,28 @@
+name: Publish README to HubSpot
+
+on:
+  push:
+    branches: [main]
+    paths: ['README.md']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Convert README.md to HTML
+        run: python .github/scripts/md_to_html.py README.md
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Publish to HubSpot
+        run: node .github/scripts/publish-to-hubspot.js
+        env:
+          HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
