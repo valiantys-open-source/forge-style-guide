@@ -21,29 +21,23 @@ async function updateAndPublish(html) {
   const sections = structuredClone(page.layoutSections);
   sections.body_dnd_area.rows[1][0].rows[0][0].params.description = html;
 
-  const patch = await fetch(`${BASE}/${PAGE_ID}`, {
+  const res = await fetch(`${BASE}/${PAGE_ID}`, {
     method: 'PATCH',
     headers,
     body: JSON.stringify({ layoutSections: sections })
   });
-  if (!patch.ok) throw new Error(`PATCH failed: ${patch.status} ${await patch.text()}`);
-
-  const publish = await fetch(`${BASE}/${PAGE_ID}/push-live`, {
-    method: 'POST',
-    headers
-  });
-  if (!publish.ok) throw new Error(`Publish failed: ${publish.status} ${await publish.text()}`);
+  if (!res.ok) throw new Error(`PATCH failed: ${res.status} ${await res.text()}`);
+  return res.json();
 }
 
 async function run() {
   if (!TOKEN) throw new Error('HUBSPOT_TOKEN is not set');
 
-  // Read the snippet output from the Python conversion step
   const html = readFileSync('./forge_style_guide_snippet.html', 'utf8');
   console.log(`Read snippet HTML: ${html.length} chars`);
 
-  await updateAndPublish(html);
-  console.log('Published successfully.');
+  const updated = await updateAndPublish(html);
+  console.log(`Published successfully. Updated at: ${updated.updatedAt}`);
 }
 
 run().catch(err => {
