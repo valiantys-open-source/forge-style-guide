@@ -1,8 +1,9 @@
 name: Publish README to HubSpot
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, forge-style-guide-pipeline]
     paths: ['README.md']
 
 jobs:
