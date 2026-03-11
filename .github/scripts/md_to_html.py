@@ -68,11 +68,11 @@ HL = {
 # Image URL replacements (GitHub relative paths → HubSpot-hosted URLs)
 # ---------------------------------------------------------------------------
 IMAGE_REPLACEMENTS = {
-    "./team/zishan-aslam.jpg": "https://www.valiantys.com/hs-fs/hubfs/zishan-aslam.jpg?width=150&name=zishan-aslam.jpg",
-    "./team/joshua-demetri.png": "https://www.valiantys.com/hs-fs/hubfs/joshua-demetri.png?width=150&name=joshua-demetri.png",
-    "./team/zachary-kipping.png": "https://www.valiantys.com/hs-fs/hubfs/zachary-kipping.png?width=150&name=zachary-kipping.png",
-    "./team/paul-spears.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/paul-spears.png",
-    "./team/conner-mcneil.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/conner-mcneil.png",
+    "./team/zishan-aslam.jpg": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/zishan-aslam.jpg",
+    "./team/joshua-demetri.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/joshua-demetri.png",
+    "./team/zachary-kipping.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/zachary-kipping.png",
+    "./team/alisha-robinson.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/alisha-robinson.png",
+    "./team/saurav-khatiwada.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/saurav-khatiwada.png",
 }
 
 LANG_DISPLAY = {
