@@ -65,7 +65,7 @@ HL = {
 }
 
 # ---------------------------------------------------------------------------
-# Image URL replacements (GitHub relative paths → HubSpot-hosted URLs)
+# Image URL replacements 
 # ---------------------------------------------------------------------------
 IMAGE_REPLACEMENTS = {
     "./team/zishan-aslam.jpg": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/zishan-aslam.jpg",
