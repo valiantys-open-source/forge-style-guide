@@ -27,6 +27,14 @@ It is a goal for this style guide to build upon the already strong community tha
     <td><b>Joshua Demetri</b><br>Principal Solutions Architect</td>
     <td><b>Zachary Kipping</b><br>R&D Manager</td>
   </tr>
+  <tr>
+    <td><img src="./team/alisha-robinson.png" alt="Alisha Robinson" width="150"></td>
+    <td><img src="./team/saurav-khatiwada.png" alt="Saurav Khatiwada" width="150"></td>
+  </tr>
+  <tr>
+    <td><b>Alisha Robinson</b><br>Software Engineer & Forge Instructor</td>
+    <td><b>Saurav Khatiwada</b><br>Software Engineer & Forge Instructor</td>
+  </tr>
 </table>
 
 ## Table of Contents
