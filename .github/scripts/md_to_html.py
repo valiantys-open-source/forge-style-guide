@@ -11,6 +11,7 @@ Output: forge_style_guide_snippet.html (in repo root, consumed by publish-to-hub
 """
 
 import html as html_mod
+import os
 import re
 import sys
 
@@ -65,14 +66,14 @@ HL = {
 }
 
 # ---------------------------------------------------------------------------
-# Image URL replacements 
+# Image URL replacements — built dynamically from the team/ folder
 # ---------------------------------------------------------------------------
+_REPO_RAW_BASE = "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main"
+_TEAM_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "team")
 IMAGE_REPLACEMENTS = {
-    "./team/zishan-aslam.jpg": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/zishan-aslam.jpg",
-    "./team/joshua-demetri.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/joshua-demetri.png",
-    "./team/zachary-kipping.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/zachary-kipping.png",
-    "./team/alisha-robinson.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/alisha-robinson.png",
-    "./team/saurav-khatiwada.png": "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/saurav-khatiwada.png",
+    f"./team/{f}": f"{_REPO_RAW_BASE}/team/{f}"
+    for f in os.listdir(_TEAM_DIR)
+    if os.path.isfile(os.path.join(_TEAM_DIR, f)) and not f.startswith(".")
 }
 
 LANG_DISPLAY = {
