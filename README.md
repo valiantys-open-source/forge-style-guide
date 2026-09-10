@@ -30,6 +30,7 @@ Corrections, current examples, and well-supported alternative approaches are wel
 - [Module Amount Limitations](#module-amount-limitations)
 - [Working With Teams](#working-with-teams)
 - [Deploying to Forge](#deploying-to-forge)
+- [Code Optimizations](#code-optimizations)
 - [Security Measures](#security-measures)
 - [UI Kit vs Custom UI](#ui-kit-vs-custom-ui)
 - [Forge Storage: Key Value vs Entity](#forge-storage-key-value-vs-entity-storage)
@@ -636,6 +637,87 @@ definitions:
     node: ~/.npm
 ```
 
+## Code Optimizations
+
+- **Do:** parse and validate the payload schema first, and return early on failure.
+- **Do:** perform header and authorization checks only after the schema check passes.
+- **Avoid:** reading from storage or calling external services before you know the payload is well-formed.
+- **Avoid:** trusting unvalidated fields for anything beyond the structural check itself; schema validation is not a substitute for authorization.
+
+Order the checks inside a web trigger (or any other event handler) so the cheapest checks run first. Payload schema validation only inspects the shape of the payload already in memory and costs nothing extra. Authorization and authentication often require a storage read or an external call, for example, comparing a token against a secret stored in Forge storage. If you check authorization first, every request, including garbage payloads and bots probing the URL, pays for a Forge runtime invocation and a storage read before it is rejected. If you validate the schema first, malformed requests are rejected with a local check and never reach the storage read, so cost tracks genuinely well-formed traffic.
+
+**Incorrect:**
+
+```typescript
+import Joi from "joi";
+import { kvs } from "@forge/kvs";
+
+const schema = Joi.object({
+  username: Joi.string().alphanum().min(3).max(30).required(),
+});
+
+export async function handleWebTrigger(event: WebTriggerRequest) {
+  const authHeader = event.headers.authorization?.[0];
+  const storedToken = await kvs.get("web-trigger-token"); // storage read on every request
+
+  if (!authHeader || authHeader !== `Bearer ${storedToken}`) {
+    return { statusCode: 401, headers: {}, body: "Unauthorized" };
+  }
+
+  let body: unknown;
+  try {
+    body = JSON.parse(event.body);
+  } catch {
+    return { statusCode: 400, headers: {}, body: "Invalid JSON" };
+  }
+
+  const { error } = schema.validate(body);
+  if (error) {
+    return { statusCode: 400, headers: {}, body: "Invalid data format" };
+  }
+
+  return { statusCode: 204, headers: {}, body: "" };
+}
+```
+
+A malformed or unauthorized request still triggers a storage read to fetch the stored token before it is rejected, so cost scales with all incoming traffic rather than just valid requests.
+
+**Correct:**
+
+```typescript
+import Joi from "joi";
+import { kvs } from "@forge/kvs";
+
+const schema = Joi.object({
+  username: Joi.string().alphanum().min(3).max(30).required(),
+});
+
+export async function handleWebTrigger(event: WebTriggerRequest) {
+  let body: unknown;
+  try {
+    body = JSON.parse(event.body);
+  } catch {
+    return { statusCode: 400, headers: {}, body: "Invalid JSON" };
+  }
+
+  const { error } = schema.validate(body);
+  if (error) {
+    return { statusCode: 400, headers: {}, body: "Invalid data format" };
+  }
+
+  const authHeader = event.headers.authorization?.[0];
+  const storedToken = await kvs.get("web-trigger-token"); // only read once the payload is well-formed
+
+  if (!authHeader || authHeader !== `Bearer ${storedToken}`) {
+    return { statusCode: 401, headers: {}, body: "Unauthorized" };
+  }
+
+  return { statusCode: 204, headers: {}, body: "" };
+}
+```
+
+Malformed payloads are rejected by a local, in-memory schema check before any storage is read, so you only pay for a storage read once a request is at least well-formed.
+
 ## Security Measures
 
 - **Avoid:** hard-coding sensitive details. Use Forge Variables.
@@ -647,7 +729,9 @@ forge variables set MY_API_KEY "your-api-key-here"
 forge variables set MY_API_KEY "your-api-key-here" --encrypt
 ```
 
-- **Do:** authenticate every web trigger using the scheme supported by its caller, such as an HMAC signature or bearer token. Forge web-trigger URLs are not authenticated by the platform.
+- **Do:** authenticate every web trigger using the scheme supported by its caller, such as an HMAC signature or bearer token. Forge web-trigger URLs are not authenticated by the platform. 
+
+See [Code Optimizations](#code-optimizations) for why this check should run after schema validation, not before.
 
 ```typescript
 export async function handleWebTrigger(event: WebTriggerRequest) {
