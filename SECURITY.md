@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please report vulnerabilities privately to [alisha.robinson@valiantys.com](mailto:alisha.robinson@valiantys.com). Include the affected page or workflow, reproduction steps, and potential impact when possible.
+Please report vulnerabilities privately by [emailing the code owners](mailto:zachary.kipping@valiantys.com,alisha.robinson@valiantys.com,zishan.aslam@valiantys.com). Include the affected page or workflow, reproduction steps, and potential impact when possible.
 
 Do not include secrets, personal data, or exploit details in a public issue. The maintainers will acknowledge the report and coordinate next steps through email.
 
