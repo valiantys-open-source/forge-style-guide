@@ -55,6 +55,34 @@ class MarkdownConverterTests(unittest.TestCase):
         self.assertIn('<strong style="color:#216e4e;">Do:</strong>', output)
         self.assertIn('<strong style="color:#ae2a19;">Avoid:</strong>', output)
 
+    def test_resolves_team_images_for_published_page(self):
+        output = self.convert('<img src="./team/alisha-robinson.png" alt="Alisha Robinson">\n')
+
+        self.assertIn(
+            'src="https://raw.githubusercontent.com/valiantys-open-source/'
+            'forge-style-guide/main/team/alisha-robinson.png"',
+            output,
+        )
+
+    def test_removes_published_page_link_from_published_page(self):
+        output = self.convert(
+            '[View the published Forge Style Guide]'
+            '(https://www.valiantys.com/en/resources/forge-style-guide)\n\n'
+            '[Atlassian Forge](https://developer.atlassian.com/platform/forge/)\n'
+        )
+
+        self.assertNotIn("View the published Forge Style Guide", output)
+        self.assertIn("Atlassian Forge", output)
+
+    def test_resolves_contribution_link_for_published_page(self):
+        output = self.convert("[Contribute](./CONTRIBUTING.md)\n")
+
+        self.assertIn(
+            'href="https://github.com/valiantys-open-source/'
+            'forge-style-guide/blob/main/CONTRIBUTING.md"',
+            output,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

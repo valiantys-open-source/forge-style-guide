@@ -343,6 +343,24 @@ def convert(md):
 # ---------------------------------------------------------------------------
 body_html = convert(md_text)
 
+# Relative repository images do not resolve when the snippet is published on
+# HubSpot, so use their public raw GitHub URLs in the generated HTML.
+body_html = body_html.replace(
+    "./team/",
+    "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main/team/",
+)
+body_html = body_html.replace(
+    'href="./CONTRIBUTING.md"',
+    'href="https://github.com/valiantys-open-source/forge-style-guide/blob/main/CONTRIBUTING.md"',
+)
+
+# This link is useful on GitHub but redundant on the page it points to.
+body_html = re.sub(
+    r'<p style="[^"]*"><a href="https://www\.valiantys\.com/en/resources/forge-style-guide"[^>]*>View the published Forge Style Guide</a></p>',
+    "",
+    body_html,
+)
+
 # The HubSpot layout provides its own handbook navigation.
 body_html = re.sub(
     r'<h2 id="table-of-contents".*?(?=<h2 )',

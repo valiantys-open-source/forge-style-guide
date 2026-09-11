@@ -1,7 +1,5 @@
 # Forge Style Guide
 
-**Last reviewed:** September 10, 2026. Examples target the Forge Node.js 24 runtime and UI Kit 10 or later.
-
 [View the published Forge Style Guide](https://www.valiantys.com/en/resources/forge-style-guide)
 
 This guide captures practical conventions from Valiantys engineers building enterprise applications on Atlassian Forge. It is a living reference that evolves with the platform and community feedback.
@@ -18,9 +16,18 @@ Corrections, current examples, and well-supported alternative approaches are wel
 
 ## Maintainers
 
-- **Zishan Aslam**, Software Architect
-- **Zachary Kipping**, R&D Manager
-- **Alisha Robinson**, Software Engineer and Forge Instructor
+<table id="teamTable">
+  <tr>
+    <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
+    <td><img src="./team/zachary-kipping.png" alt="Zachary Kipping" width="150"></td>
+    <td><img src="./team/alisha-robinson.png" alt="Alisha Robinson" width="150"></td>
+  </tr>
+  <tr>
+    <td><b>Zishan Aslam</b><br>Software Architect</td>
+    <td><b>Zachary Kipping</b><br>R&amp;D Manager</td>
+    <td><b>Alisha Robinson</b><br>Software Engineer &amp; Forge Instructor</td>
+  </tr>
+</table>
 
 ## Table of Contents
 
@@ -804,4 +811,4 @@ console.log(preferences); // Output: { theme: 'dark', notificationsEnabled: true
 
 ## Contact
 
-If you have feedback, questions, or ideas about this guide, contact [Alisha Robinson](mailto:alisha.robinson@valiantys.com) at [alisha.robinson@valiantys.com](mailto:alisha.robinson@valiantys.com).
+If you have feedback, questions, or ideas about this guide, [email the code owners](mailto:zachary.kipping@valiantys.com,alisha.robinson@valiantys.com,zishan.aslam@valiantys.com).
