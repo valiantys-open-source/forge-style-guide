@@ -11,9 +11,10 @@ Output: forge_style_guide_snippet.html (in repo root, consumed by publish-to-hub
 """
 
 import html as html_mod
-import os
 import re
 import sys
+from html.parser import HTMLParser
+from urllib.parse import urlparse
 
 if len(sys.argv) < 2:
     sys.exit("Usage: python md_to_html.py <input.md>")
@@ -29,15 +30,24 @@ print(f"Read markdown from {sys.argv[1]} ({len(md_text)} chars)")
 FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif"
 MONO_FONT = "ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
 
-COLOR = "#171857"
-BG = "#f8f8f8"
+COLOR = "#172b4d"
+BG = "#ffffff"
+PURPLE = "#6554c0"
+PURPLE_SUBTLE = "#f7f5ff"
+BLUE = "#0c66e4"
+GREEN = "#216e4e"
+RED = "#ae2a19"
 
-S_WRAPPER = f"text-align: left; color: {COLOR}; background-color: {BG}; font-family: {FONT}; line-height: 1.6; font-size: 16px; max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem;"
-S_H3 = f"line-height: 1.25; color: {COLOR}; background-color: {BG}; font-family: {FONT}; font-size: 1.75em; font-weight: 600; margin: 0 0 0.75rem 0; padding: 0; border: none;"
-S_H3_CENTERED = S_H3.replace("margin: 0 0 0.75rem 0", "margin: 0 0 0.75rem 0; text-align: center")
-S_H5 = f"line-height: 1; color: {COLOR}; background-color: {BG}; font-family: {FONT}; font-size: 1.15em; font-weight: 600; margin: 1.75rem 0 0.5rem 0; padding: 0; border: none;"
+S_WRAPPER = f"text-align: left; color: {COLOR}; background-color: {BG}; font-family: {FONT}; line-height: 1.6; font-size: 16px; max-width: 1100px; margin: 0 auto; border-top: 8px solid {PURPLE};"
+S_HEADER = f"display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid #dfe1e6;background:{BG};color:{COLOR};font-family:{FONT};"
+S_LAYOUT = "display:flex;flex-wrap:wrap;align-items:stretch;"
+S_SIDEBAR = f"box-sizing:border-box;flex:1 1 180px;max-width:100%;padding:1.5rem 1rem;background:{PURPLE_SUBTLE};border-right:1px solid #d9d2f5;font-family:{FONT};"
+S_MAIN = "box-sizing:border-box;flex:4 1 300px;max-width:100%;min-width:0;overflow:hidden;padding:2rem 2rem 3rem;"
+S_H3 = f"line-height: 1.15; color: {COLOR}; background-color: {BG}; font-family: {FONT}; font-size: 2.4em; font-weight: 600; margin: 0 0 1rem 0; padding: 0; border: none;"
+S_H3_CENTERED = S_H3
+S_H5 = f"line-height: 1.25; color: {COLOR}; background-color: {BG}; font-family: {FONT}; font-size: 1.25em; font-weight: 600; margin: 2rem 0 0.6rem 0; padding: 0; border: none;"
 S_P = f"color: {COLOR}; background-color: {BG}; font-family: {FONT}; font-size: 16px; line-height: 1.6; margin: 0.75rem 0; padding: 0;"
-S_A = f"color: #0052CC; text-decoration: none;"
+S_A = f"color: {BLUE}; text-decoration: underline; text-underline-offset: 0.15em;"
 S_UL = f"text-align: left; padding-left: 1.5em; margin: 0.5rem 0; font-family: {FONT}; font-size: 16px; line-height: 1.6; color: {COLOR};"
 S_LI = f"margin: 0.25rem 0; padding: 0; font-size: 16px; line-height: 1.6; color: {COLOR}; font-family: {FONT};"
 S_HR = f"border: none; border-top: 1px solid #d1d9e0; margin: 2rem 0;"
@@ -63,17 +73,6 @@ HL = {
     "variable": "color: #953800;",
     "flag": "color: #0550ae;",
     "punctuation": "color: #1f2328;",
-}
-
-# ---------------------------------------------------------------------------
-# Image URL replacements — built dynamically from the team/ folder
-# ---------------------------------------------------------------------------
-_REPO_RAW_BASE = "https://raw.githubusercontent.com/valiantys-open-source/forge-style-guide/main"
-_TEAM_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "team")
-IMAGE_REPLACEMENTS = {
-    f"./team/{f}": f"{_REPO_RAW_BASE}/team/{f}"
-    for f in os.listdir(_TEAM_DIR)
-    if os.path.isfile(os.path.join(_TEAM_DIR, f)) and not f.startswith(".")
 }
 
 LANG_DISPLAY = {
@@ -146,17 +145,16 @@ def _highlight_ts(code):
             pk = i+(2 if code[i+1]=='/' else 1); te=pk
             while te<len(code) and (code[te].isalnum() or code[te] in '.-'): te+=1
             tn=code[pk:te]
-            if tn and te<len(code) and code[te]=='>' and i>0 and (code[i-1].isalnum() or code[i-1] in '_$'):
+            if code[i+1] != '/' and tn and te<len(code) and code[te]=='>' and i>0 and (code[i-1].isalnum() or code[i-1] in '_$'):
                 out.append(_esc('<')+_span("type",_esc(tn))+_esc('>')); i=te+1; continue
             j=i+1
             if code[j]=='/': j+=1
             while j<len(code) and (code[j].isalnum() or code[j] in '.-'): j+=1
             while j<len(code) and code[j]!='>': j+=1
             if j<len(code): j+=1
-            tt=code[i:j]
-            h=re.sub(r'(</?)([\w.-]+)', lambda m: _esc(m.group(1))+_span("tag",_esc(m.group(2))), tt)
-            h=re.sub(r'(\w+)(=)', lambda m: _span("attr",_esc(m.group(1)))+_esc(m.group(2)), h)
-            out.append(h); i=j; continue
+            # Escape JSX tags as a unit. Re-highlighting generated span markup can
+            # corrupt the displayed source by treating the span's style as JSX.
+            out.append(_esc(code[i:j])); i=j; continue
         if code[i].isdigit() or (code[i]=='.' and i+1<len(code) and code[i+1].isdigit()):
             j=i
             while j<len(code) and (code[j].isalnum() or code[j] in '.xXeE_'): j+=1
@@ -252,7 +250,7 @@ def highlight_code(code, lang):
 # ---------------------------------------------------------------------------
 # Markdown-to-HTML converter
 # ---------------------------------------------------------------------------
-HEADING_TAG_MAP  = {1: "h3", 2: "h5", 3: "h5", 4: "h6", 5: "h6", 6: "h6"}
+HEADING_TAG_MAP  = {1: "h1", 2: "h2", 3: "h3", 4: "h4", 5: "h5", 6: "h6"}
 HEADING_STYLE_MAP = {1: S_H3_CENTERED, 2: S_H5, 3: S_H5, 4: S_H5, 5: S_H5, 6: S_H5}
 
 
@@ -345,20 +343,113 @@ def convert(md):
 # ---------------------------------------------------------------------------
 body_html = convert(md_text)
 
-for old_url, new_url in IMAGE_REPLACEMENTS.items():
-    body_html = body_html.replace(old_url, new_url)
+# The HubSpot layout provides its own handbook navigation.
+body_html = re.sub(
+    r'<h2 id="table-of-contents".*?(?=<h2 )',
+    "",
+    body_html,
+    flags=re.DOTALL,
+)
 
-def _style_team_table(match):
-    table_inner = match.group(1)
-    first_tr = re.search(r'<tr>(.*?)</tr>', table_inner, re.DOTALL)
-    num_cols = len(re.findall(r'<td>', first_tr.group(1))) if first_tr else 1
-    col_width = round(100 / num_cols, 4)
-    table_inner = re.sub(r'<td>', f'<td style="width: {col_width}%;">', table_inner)
-    return f'<table id="teamTable" style="width: 100%; margin-left: auto; margin-right: auto;">\n<tbody>{table_inner}</tbody>\n</table>'
+# Pair semantic labels with text and color so meaning never depends on color alone.
+body_html = body_html.replace(
+    "<strong>Do:</strong>",
+    f'<strong style="color:{GREEN};">Do:</strong>',
+).replace(
+    "<strong>Correct:</strong>",
+    f'<strong style="color:{GREEN};">Correct:</strong>',
+).replace(
+    "<strong>Avoid:</strong>",
+    f'<strong style="color:{RED};">Avoid:</strong>',
+).replace(
+    "<strong>Incorrect:</strong>",
+    f'<strong style="color:{RED};">Incorrect:</strong>',
+)
 
-body_html = re.sub(r'<table id="teamTable">(.*?)</table>', _style_team_table, body_html, flags=re.DOTALL)
+body_html = re.sub(
+    r'<p style="([^"]*)">Reference: (.*?)</p>',
+    rf'<p style="\1background:#e9f2ff;border-left:3px solid {BLUE};color:{BLUE};padding:0.75rem 0.9rem;">Reference: \2</p>',
+    body_html,
+)
 
-snippet_html = f'<div style="{S_WRAPPER}">\n{body_html}\n<p style="{S_P}">&nbsp;</p>\n</div>\n'
+ALLOWED_TAGS = {
+    "a", "b", "br", "code", "div", "em", "h1", "h2", "h3", "h4",
+    "h5", "h6", "header", "img", "li", "main", "nav", "ol", "p", "pre", "span", "strong",
+    "table", "tbody", "td", "tr", "ul",
+}
+ALLOWED_ATTRIBUTES = {"alt", "aria-label", "href", "id", "src", "style", "width"}
+DROP_CONTENT_TAGS = {"embed", "iframe", "math", "object", "script", "style", "svg", "template"}
+
+
+def _safe_url(value):
+    parsed = urlparse(value.strip())
+    return not parsed.scheme or parsed.scheme.lower() in {"http", "https", "mailto"}
+
+
+def _safe_style(value):
+    normalized = re.sub(r"\s+", "", value).lower()
+    return not any(token in normalized for token in ("url(", "expression(", "@import", "behavior:", "-moz-binding"))
+
+
+class _HtmlSanitizer(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.output = []
+        self.drop_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag in DROP_CONTENT_TAGS:
+            self.drop_depth += 1
+            return
+        if self.drop_depth or tag not in ALLOWED_TAGS:
+            return
+        safe_attrs = []
+        for name, value in attrs:
+            name = name.lower()
+            value = value or ""
+            if name not in ALLOWED_ATTRIBUTES:
+                continue
+            if name in {"href", "src"} and not _safe_url(value):
+                continue
+            if name == "style" and not _safe_style(value):
+                continue
+            safe_attrs.append(f' {name}="{html_mod.escape(value, quote=True)}"')
+        self.output.append(f"<{tag}{''.join(safe_attrs)}>")
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag in DROP_CONTENT_TAGS:
+            self.drop_depth = max(0, self.drop_depth - 1)
+            return
+        if not self.drop_depth and tag in ALLOWED_TAGS:
+            self.output.append(f"</{tag}>")
+
+    def handle_data(self, data):
+        if not self.drop_depth:
+            self.output.append(html_mod.escape(data))
+
+
+def sanitize_html(value):
+    sanitizer = _HtmlSanitizer()
+    sanitizer.feed(value)
+    sanitizer.close()
+    return "".join(sanitizer.output)
+
+
+sidebar_links = []
+for match in re.finditer(r'<h2 id="([^"]+)"[^>]*>(.*?)</h2>', body_html):
+    label = re.sub(r"<[^>]+>", "", match.group(2))
+    sidebar_links.append(f'<li style="margin:0;padding:0;"><a href="#{match.group(1)}" style="{S_A}color:#403294;display:block;padding:0.35rem 0;">{label}</a></li>')
+
+header_html = f'<header style="{S_HEADER}"><strong>Forge Style Guide</strong><span style="font-size:13px;color:#5e6c84;">Valiantys engineering × Atlassian Forge</span></header>'
+sidebar_html = f'<nav style="{S_SIDEBAR}" aria-label="Guide contents"><strong style="display:block;color:#403294;margin-bottom:0.75rem;">Contents</strong><ul style="list-style:none;margin:0;padding:0;">{"".join(sidebar_links)}</ul></nav>'
+layout_html = f'<div style="{S_LAYOUT}">{sidebar_html}<main style="{S_MAIN}">{body_html}<p style="{S_P}">&nbsp;</p></main></div>'
+back_to_top_html = f'<a href="#forge-style-guide" aria-label="Back to top" style="position:fixed;right:1.5rem;bottom:1.5rem;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:{BLUE};color:#ffffff;text-decoration:none;font-size:24px;line-height:1;box-shadow:0 4px 12px rgba(12,102,228,0.24);">↑</a>'
+snippet_html = sanitize_html(f'<div style="{S_WRAPPER}">{header_html}{layout_html}{back_to_top_html}</div>') + "\n"
 
 # Output to repo root so publish-to-hubspot.js can read it
 snippet_path = "forge_style_guide_snippet.html"

@@ -1,41 +1,26 @@
-<!-- markdownlint-disable MD033 -->
-
 # Forge Style Guide
 
-A style guide provides resources and shared consensus on best practices, formatting, and development practices. That requires having a deep understanding and experience with the platform and tools for which the guide speaks to. This style guide is built upon the ongoing experiences of the Valiantys engineering team with enterprise-grade software development built on the Forge platform. It is intended to be published as a “living” document in collaboration with marketplace vendors, Atlassian engineers, and customer development teams to evolve and grow along with the platform.
+**Last reviewed:** September 10, 2026. Examples target the Forge Node.js 24 runtime and UI Kit 10 or later.
+
+[View the published Forge Style Guide](https://www.valiantys.com/en/resources/forge-style-guide)
+
+This guide captures practical conventions from Valiantys engineers building enterprise applications on Atlassian Forge. It is a living reference that evolves with the platform and community feedback.
 
 ## Purpose
 
-This guide seeks to provide an opinionated stance on syntax, conventions, and structure for solutions built on the Forge platform. The key driver for such a guide is to enhance and grow the Atlassian Cloud platform by lowering the barrier of entry for Forge development while spurring conversation and provoking thought around best practices and conventions.
+The guide provides opinionated defaults for structuring, securing, and operating Forge applications. Treat each recommendation as a starting point and document exceptions that better fit your application.
 
 ## Community Contributions
 
-It is a goal for this style guide to build upon the already strong community that exists around Forge to build shared resources backed by the people for whom it matters most. With Forge being a relatively new platform, we expect there to be growth and evolution within the platform that we intend to capture in the style guide. Community involvement is what takes this guide from being a blog post to being an ever-growing resource that creates adoption and engagement for the Forge platform.
+Corrections, current examples, and well-supported alternative approaches are welcome. Recommendations should link to primary documentation when they depend on platform behavior or limits.
 
-[If you would like to contribute to the Forge Style Guide, click here to visit the public community-based Github repo.](https://github.com/valiantys-open-source/forge-style-guide)
+[Read the contribution guide to propose an improvement on GitHub.](./CONTRIBUTING.md)
 
-## The Team
+## Maintainers
 
-<table id="teamTable">
-  <tr>
-    <td><img src="./team/zishan-aslam.jpg" alt="Zishan Aslam" width="150"></td>
-    <td><img src="./team/joshua-demetri.png" alt="Joshua Demetri" width="150"></td>
-    <td><img src="./team/zachary-kipping.png" alt="Zachary Kipping" width="150"></td>
-  </tr>
-  <tr>
-    <td><b>Zishan Aslam</b><br>Software Architect</td>
-    <td><b>Joshua Demetri</b><br>Principal Solutions Architect</td>
-    <td><b>Zachary Kipping</b><br>R&D Manager</td>
-  </tr>
-  <tr>
-    <td><img src="./team/alisha-robinson.png" alt="Alisha Robinson" width="150"></td>
-    <td><img src="./team/saurav-khatiwada.png" alt="Saurav Khatiwada" width="150"></td>
-  </tr>
-  <tr>
-    <td><b>Alisha Robinson</b><br>Software Engineer & Forge Instructor</td>
-    <td><b>Saurav Khatiwada</b><br>Software Engineer & Forge Instructor</td>
-  </tr>
-</table>
+- **Zishan Aslam**, Software Architect
+- **Zachary Kipping**, R&D Manager
+- **Alisha Robinson**, Software Engineer and Forge Instructor
 
 ## Table of Contents
 
@@ -52,14 +37,15 @@ It is a goal for this style guide to build upon the already strong community tha
 
 ## Single Purpose Code
 
-One of the most important aspects of having easy-to-read and debug code is to keep code minimal and serving a single purpose.
+Keep each file focused on one cohesive responsibility. Split unrelated behavior, but keep small helpers and components together when separation would make the code harder to follow.
 
-- **<green>Do</green>** keep each file limited to one function.
-- **<green>Do</green>** keep each file limited to a single component.
+- **Do:** group code that changes for the same reason.
+- **Do:** split a function or component when it has an independent owner, lifecycle, or test boundary.
+- **Avoid:** creating one-line files that only re-export, cast, or wrap another function.
 
 ### Single Function Per File
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```typescript
 // src/triggers/web/multi-functions.ts
@@ -72,9 +58,9 @@ export async function handleSecondWebTrigger(event: WebTriggerRequest): Promise<
 }
 ```
 
-This example includes two functions in one file, violating the single-purpose rule.
+This example mixes two unrelated trigger handlers in one file.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```typescript
 // src/triggers/web/handleWebTrigger.ts
@@ -90,19 +76,19 @@ export async function handleSecondWebTrigger(event: WebTriggerRequest): Promise<
 }
 ```
 
-Each file contains a single function, adhering to the single-purpose code guideline.
+Each independently deployed handler has a clear home.
 
 ### Single Component Per File
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```typescript
 // src/components/MultiComponents.tsx
-import ForgeUI, { Button, Text } from "@forge/react";
+import { Button, Text } from "@forge/react";
 
 const MyButton = () => {
   return (
-    <Button text="Click Me" onClick={() => console.log("Button clicked!")} />
+    <Button onClick={() => console.log("Button clicked!")}>Click me</Button>
   );
 };
 
@@ -111,9 +97,9 @@ const MyText = () => {
 };
 ```
 
-This file contains two components, violating the guideline to keep one component per file.
+This file combines unrelated UI elements without a shared responsibility.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```typescript
 // src/components/MyButton.tsx
@@ -121,7 +107,7 @@ import { Button } from "@forge/react";
 
 const MyButton = () => {
   return (
-    <Button text="Click Me" onClick={() => console.log("Button clicked!")} />
+    <Button onClick={() => console.log("Button clicked!")}>Click me</Button>
   );
 };
 
@@ -139,21 +125,21 @@ const MyText = () => {
 export default MyText;
 ```
 
-Each component is separated into its own file, following the single-purpose rule.
+Each independently reused component has a clear module boundary.
 
 ## Folder Architecture
 
 Having each function/component separate per file can create a lot of files, so you need to maintain a good and easy-to-understand folder architecture. This architecture should ideally tell you exactly what is inside that folder without you even needing to open it. Keep backend code inside a folder marked as `src/backend` and the frontend code in `src/frontend`.
 
-- **<green>Do</green>** keep all forge functions in a file suffixed with `.forge.ts` such as `filename.forge.ts`.
-- **<green>Do</green>** keep all code within the `src` folder.
-- **<green>Do</green>** keep all backend code inside a `src/backend` folder and all frontend code in `src/frontend`.
-- **<green>Do</green>** keep each file name prefixed with the forge module.
+- **Do:** keep all Forge functions in a file suffixed with `.forge.ts` such as `filename.forge.ts`.
+- **Do:** keep all code within the `src` folder.
+- **Do:** keep all backend code inside a `src/backend` folder and all frontend code in `src/frontend`.
+- **Do:** keep each file name prefixed with the forge module.
   - src/backend/web-func-name.forge.ts
   - src/backend/web-2nd-func-name.forge.ts
   - src/backend/scheduled-func-name.forge.ts
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```bash
 src/
@@ -168,7 +154,7 @@ src/
 - File names lack proper prefixes and suffixes.
 - It’s not immediately clear whether these files belong to backend or frontend functionality.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```bash
 src/
@@ -187,20 +173,20 @@ src/
     └── header.component.tsx
 ```
 
-<!-- TODO: Add a note/example of how to implement with and app that has multiple frontends -->
-
 This separates backend and frontend code into distinct folders (src/backend and src/frontend) and uses clear file naming conventions with the `.forge.ts` suffix and module prefixes (web-, scheduled-). This structure is immediately intuitive and makes it easier to understand the contents of each folder.
 
 ## Manifest File Pointers
 
 In the manifest file, you often need to specify a path to a function in your code. To avoid typos in the path, it is cleaner and easier to have everything exported in your index file. This way, your manifest file can always use the index file as the path.
 
-- **<green>Do</green>** use the index file as the source of all functions in your manifest file.
-- **<green>Do</green>** export all code that the manifest file needs in your index file.
+Reference: [Forge runtimes and manifest configuration](https://developer.atlassian.com/platform/forge/function-reference/nodejs-runtime/).
+
+- **Do:** use the index file as the source of all functions in your manifest file.
+- **Do:** export all code that the manifest file needs in your index file.
 
 ### Barrel File Exports
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```typescript
 // src/backend/web-func-name.forge.ts
@@ -218,12 +204,12 @@ export async function handleSecondWebFunction(event: WebTriggerRequest): Promise
 
 ```typescript
 // src/backend/scheduled-func-name.forge.ts
-export async function handleScheduledFunction(event: any): Promise<void> {
-  console.log("Handling scheduled trigger:", event);
+export async function handleScheduledFunction(_event: unknown): Promise<void> {
+  console.log("Handling scheduled trigger:", _event);
 }
 ```
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```typescript
 // src/backend/web-func-name.forge.ts
@@ -241,8 +227,8 @@ export async function handleSecondWebFunction(event: WebTriggerRequest): Promise
 
 ```typescript
 // src/backend/scheduled-func-name.forge.ts
-export async function handleScheduledFunction(event: any): Promise<void> {
-  console.log("Handling scheduled trigger:", event);
+export async function handleScheduledFunction(_event: unknown): Promise<void> {
+  console.log("Handling scheduled trigger:", _event);
 }
 ```
 
@@ -256,7 +242,7 @@ export { handleScheduledFunction } from "./scheduled-func-name.forge";
 The barrel file in `src/index.ts` re-exports all the Forge backend functions.
 Each Forge function file (e.g., `web-func-name.forge.ts`) exports its function individually, but the barrel file consolidates them in one place for easier reference in other parts of the project, such as the manifest file.
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```yaml
 # manifest.yml
@@ -286,7 +272,7 @@ resources:
 
 app:
   runtime:
-    name: nodejs18.x
+    name: nodejs24.x
   id: ari:cloud:ecosystem::app/110ed4d0-3e25-4f98-93b0-b6d072f0a955
 
 permissions:
@@ -298,7 +284,7 @@ permissions:
 - Direct File Reference: Each function is directly referenced by its file path (e.g., `src/backend/web-func-name.forge.handleWebFunction`), instead of consolidating the exports through a barrel file (index.ts).
 - Harder to Maintain: This increases the risk of errors in the manifest file and makes the code harder to maintain, especially if file paths change.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```yaml
 # manifest.yml
@@ -328,7 +314,7 @@ resources:
 
 app:
   runtime:
-    name: nodejs18.x
+    name: nodejs24.x
   id: ari:cloud:ecosystem::app/110ed4d0-3e25-4f98-93b0-b6d072f0a955
 
 permissions:
@@ -347,23 +333,22 @@ permissions:
 
 When using web triggers, it is possible to create a web trigger for each method for each endpoint you would like. For example, say you wanted an API for a user's behavior:
 
+Forge does not authenticate web-trigger URLs. Each handler must authenticate requests using the security scheme supported by its caller. Reference: [Forge web triggers](https://developer.atlassian.com/platform/forge/runtime-reference/web-trigger/).
+
 - `GET /users`
 - `GET /users/{id}`
 - `POST /users`
 - `PUT /users/{id}`
 - `DELETE /users/{id}`
-<!-- eslint -->
-- **<green>Do</green>** create one web trigger to handle all these routes.
-- **<red>Avoid</red>** creating a web trigger for each route.
-- **<green>Do</green>** create a separate web trigger for other endpoints, for example, `/posts`.
+- **Do:** create one web trigger to handle all these routes.
+- **Avoid:** creating a web trigger for each route.
+- **Do:** create a separate web trigger for other endpoints, for example, `/posts`.
 
-**<red>Incorrect:</red>**
-
-<!-- Separate code blocks and add comments to make it more clear what is being done -->
+**Incorrect:**
 
 ```typescript
 // src/backend/web-get-users.forge.ts
-export async function getUsers(event: any): Promise<void> {
+export async function getUsers(event: WebTriggerRequest): Promise<void> {
   if (event.method === "GET" && event.path === "/users") {
     console.log("Fetching all users");
   }
@@ -372,7 +357,7 @@ export async function getUsers(event: any): Promise<void> {
 
 ```typescript
 // src/backend/web-get-user-by-id.forge.ts
-export async function getUserById(event: any): Promise<void> {
+export async function getUserById(event: WebTriggerRequest): Promise<void> {
   if (event.method === "GET" && event.path.startsWith("/users/")) {
     console.log(`Fetching user with ID: ${event.path.split("/").pop()}`);
   }
@@ -381,7 +366,7 @@ export async function getUserById(event: any): Promise<void> {
 
 ```typescript
 // src/backend/web-post-users.forge.ts
-export async function createUser(event: any): Promise<void> {
+export async function createUser(event: WebTriggerRequest): Promise<void> {
   if (event.method === "POST" && event.path === "/users") {
     console.log("Creating a new user");
   }
@@ -390,7 +375,7 @@ export async function createUser(event: any): Promise<void> {
 
 ```typescript
 // src/backend/web-put-users.forge.ts
-export async function updateUser(event: any): Promise<void> {
+export async function updateUser(event: WebTriggerRequest): Promise<void> {
   if (event.method === "PUT" && event.path.startsWith("/users/")) {
     console.log(`Updating user with ID: ${event.path.split("/").pop()}`);
   }
@@ -399,7 +384,7 @@ export async function updateUser(event: any): Promise<void> {
 
 ```typescript
 // src/backend/web-delete-users.forge.ts
-export async function deleteUser(event: any): Promise<void> {
+export async function deleteUser(event: WebTriggerRequest): Promise<void> {
   if (event.method === "DELETE" && event.path.startsWith("/users/")) {
     console.log(`Deleting user with ID: ${event.path.split("/").pop()}`);
   }
@@ -425,7 +410,7 @@ modules:
 - A separate web trigger is created for each individual route (GET, POST, PUT, DELETE), leading to unnecessary duplication and complexity.
 - Managing multiple web triggers for closely related routes adds extra maintenance overhead.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```typescript
 // src/backend/web-users/web-users-get-all-users.ts
@@ -443,14 +428,14 @@ export async function getUserById(userId: string): Promise<void> {
 
 ```typescript
 // src/backend/web-users/web-users-create-user.ts
-export async function createUser(): Promise<void> {
+export async function createUser(body: string): Promise<void> {
   console.log("Creating a new user");
 }
 ```
 
 ```typescript
 // src/backend/web-users/web-users-update-user.ts
-export async function updateUser(userId: string): Promise<void> {
+export async function updateUser(userId: string, body: string): Promise<void> {
   console.log(`Updating user with ID: ${userId}`);
 }
 ```
@@ -474,8 +459,7 @@ export async function handleUsersApi(event: WebTriggerRequest): Promise<void> {
   const path = event.queryParameters?.path?.join("") ?? "";
 
   if (!path.startsWith("users")) {
-    // Throw an error
-    return;
+    throw new Error("Unknown route");
   }
 
   const userId = path.includes("/") ? path.split("/").pop() : undefined;
@@ -489,9 +473,11 @@ export async function handleUsersApi(event: WebTriggerRequest): Promise<void> {
       return createUser(event.body);
 
     case "PUT":
+      if (!userId) throw new Error("User ID is required");
       return updateUser(userId, event.body);
 
     case "DELETE":
+      if (!userId) throw new Error("User ID is required");
       return deleteUser(userId);
 
     default:
@@ -513,10 +499,10 @@ modules:
 
 Due to the limitations on the maximum number of scheduled triggers, you need to think differently. For instance, if you want to create two weekly scheduled triggers: a database cleaner and a reports generator.
 
-- **<red>Avoid</red>** creating a scheduled trigger per feature.
-- **<green>Do</green>** create scheduled triggers based on the interval.
+- **Avoid:** creating a scheduled trigger per feature.
+- **Do:** create scheduled triggers based on the interval.
 
-**<red>Incorrect:</red>**
+**Incorrect:**
 
 ```ts
 // src/backend/scheduled-database-cleaner.forge.ts
@@ -548,9 +534,7 @@ modules:
 - Each feature has its own scheduled trigger (database-cleaner and reports-generator), both running weekly.
 - This approach wastes available scheduled triggers and does not consolidate tasks that could share the same interval.
 
-**<green>Correct:</green>**
-
-<!-- Add example with 2 scheduled triggers for different time increments -->
+**Correct:**
 
 ```ts
 // src/backend/scheduled-database-cleaner.forge.ts
@@ -593,19 +577,19 @@ modules:
 
 ## Working With Teams
 
-When doing a Forge deploy, it does not consider the code committed or pushed. It deploys the code that is in the file at the time of executing this command. To avoid confusion among team members working on the development branch, keep a dev branch for each member, for example, `dev-zishan` and `dev-joshua`.
+Forge deploys the files in the current working tree, including uncommitted changes. Give each developer or feature an isolated Forge environment so one person cannot accidentally deploy another person’s work.
 
-- **<green>Do</green>** keep a separate development environment using the person’s name to help easily identify.
-- **<red>Avoid</red>** working in the same environment on Forge.
-- **<green>Do</green>** use a separate environment for each feature if you are on a large team working on multiple features at the same time.
+- **Do:** keep a separate development environment using the person’s name to help easily identify.
+- **Avoid:** working in the same environment on Forge.
+- **Do:** use a separate environment for each feature if you are on a large team working on multiple features at the same time.
 
 ## Deploying to Forge
 
-- **<green>Do</green>** use CI/CD to automatically deploy code to development, staging, and production branches based on when pull requests are merged into these branches.
-- **<green>Do</green>** set up restrictions to prevent direct pushes to these branches.
-- **<red>Avoid</red>** pushing directly to development, staging, and production environments.
+- **Do:** use CI/CD to automatically deploy code to development, staging, and production branches based on when pull requests are merged into these branches.
+- **Do:** set up restrictions to prevent direct pushes to these branches.
+- **Avoid:** pushing directly to development, staging, and production environments.
 
-**<green>Correct:</green>**
+**Correct:**
 
 ```yaml
 # bitbucket-pipelines.yml
@@ -654,8 +638,8 @@ definitions:
 
 ## Security Measures
 
-- **<red>Avoid</red>** hard-coding sensitive details. Use Forge Variables.
-- **<green>Do</green>** use encrypted Forge environment variables
+- **Avoid:** hard-coding sensitive details. Use Forge Variables.
+- **Do:** use encrypted Forge environment variables
 
 ```bash
 forge variables set MY_API_KEY "your-api-key-here"
@@ -663,22 +647,23 @@ forge variables set MY_API_KEY "your-api-key-here"
 forge variables set MY_API_KEY "your-api-key-here" --encrypt
 ```
 
-- **<green>Do</green>** have authorization header checks on all web trigger handlers. Highly suggest secure ways to generate secrets like implementing an asymmetric authentication method.
+- **Do:** authenticate every web trigger using the scheme supported by its caller, such as an HMAC signature or bearer token. Forge web-trigger URLs are not authenticated by the platform.
 
 ```typescript
-export async function handleWebTrigger(event) {
-  const authHeader = event.headers["Authorization"]?.[0];
+export async function handleWebTrigger(event: WebTriggerRequest) {
+  const authHeader = event.headers.authorization?.[0];
   if (
     !authHeader ||
     authHeader !== `Bearer ${process.env.WEB_TRIGGER_AUTHORIZATION_HEADER}`
   ) {
-    throw new Error("Unauthorized");
+    return { statusCode: 401, headers: {}, body: "Unauthorized" };
   }
-  // proceed with logic
+
+  return { statusCode: 204, headers: {}, body: "" };
 }
 ```
 
-- **<green>Do</green>** validate input data to handle invalid data.
+- **Do:** validate input data to handle invalid data.
 
 ```typescript
 import Joi from "joi";
@@ -693,30 +678,44 @@ const schema = Joi.object({
 });
 
 
-export async function handleWebTrigger(event) {
-  const { error } = schema.validate(JSON.parse(event.body));
-  if (error) {
-    throw new Error("Invalid data format");
+export async function handleWebTrigger(event: WebTriggerRequest) {
+  let body: unknown;
+
+  try {
+    body = JSON.parse(event.body);
+  } catch {
+    return { statusCode: 400, headers: {}, body: "Invalid JSON" };
   }
-  // proceed with logic
+
+  const { error } = schema.validate(body);
+  if (error) {
+    return { statusCode: 400, headers: {}, body: "Invalid data format" };
+  }
+
+  return { statusCode: 204, headers: {}, body: "" };
 }
 ```
 
-- **<green>Do</green>** enforce strict CORS policies in web triggers.
+- **Do:** enforce strict CORS policies in web triggers.
 
 ```typescript
-export async function handleWebTrigger(event) {
+export async function handleWebTrigger(event: WebTriggerRequest) {
   const allowedOrigins = ["https://my-allowed-site.com"];
-  const origin = event.headers["Origin"];
+  const origin = event.headers.origin?.[0];
 
-  if (!allowedOrigins.includes(origin)) {
-    throw new Error("CORS policy violation");
+  if (!origin || !allowedOrigins.includes(origin)) {
+    return { statusCode: 403, headers: {}, body: "Origin not allowed" };
   }
-  // proceed with logic
+
+  return {
+    statusCode: 204,
+    headers: { "Access-Control-Allow-Origin": [origin] },
+    body: "",
+  };
 }
 ```
 
-- **<red>Avoid</red>** giving more permissions than your app requires. Use the principle of least privilege when specifying scopes in your `manifest.yml`.
+- **Avoid:** giving more permissions than your app requires. Use the principle of least privilege when specifying scopes in your `manifest.yml`.
 
 ```yaml
 permissions:
@@ -725,9 +724,9 @@ permissions:
     - write:jira-work
 ```
 
-- **<green>Do</green>** validate input data to prevent injection attacks (e.g., SQL injection, NoSQL injection).
-- **<green>Do</green>** implement rate limiting on web triggers to mitigate Denial-of-Service (DoS) attacks.
-- **<green>Do</green>** log important security-related events (e.g., failed authorization attempts) securely. Use logging libraries to track unusual activities, but ensure logs don’t contain sensitive information like passwords or API keys.
+- **Do:** validate input data to prevent injection attacks (e.g., SQL injection, NoSQL injection).
+- **Do:** implement rate limiting on web triggers to mitigate Denial-of-Service (DoS) attacks.
+- **Do:** log important security-related events (e.g., failed authorization attempts) securely. Use logging libraries to track unusual activities, but ensure logs don’t contain sensitive information like passwords or API keys.
 
 ## UI Kit vs Custom UI
 
@@ -735,9 +734,11 @@ When building on the Forge platform, it is highly recommended to use the **UI Ki
 
 If you do need to add Custom UI, try to use the **Frame** component to embed your Custom UI inside the UI Kit.
 
-- **<green>Do</green>** use UI Kit whenever possible.
-- **<green>Do</green>** use Custom UI when advanced styling or custom components are needed.
-- **<green>Do</green>** use Frame component when possible to add custom UI to a UI Kit app.
+Reference: [Forge UI Kit components](https://developer.atlassian.com/platform/forge/ui-kit/components/) and the [Frame component](https://developer.atlassian.com/platform/forge/ui-kit/components/frame/).
+
+- **Do:** use UI Kit whenever possible.
+- **Do:** use Custom UI when advanced styling or custom components are needed.
+- **Do:** use Frame component when possible to add custom UI to a UI Kit app.
 
 ### Benefits of UI Kit
 
@@ -758,7 +759,7 @@ export default function Table() {
             head={head}
             rows={rows}
             rowsPerPage={5}
-            isLoading={true}
+            isLoading={false}
             emptyView="No data to display"
             isRankable
             highlightedRowIndex={[0, 1]}
@@ -771,10 +772,12 @@ export default function Table() {
 
 When developing on the Forge platform, it's important to choose between **Forge Storage Key-Value** and **Forge Entity Storage** based on your specific needs. Each has its own strengths depending on the type of data and how you plan to access it.
 
-- **<green>Do</green>** use **Entity Storage** when you need to index properties for querying purposes.
-- **<green>Do</green>** use **Key-Value Storage**, whether it's storing strings or JSON, as long as you don't need to index properties.
-- **<red>Avoid</red>** using **Entity Storage** if you don't need to index on properties, as there are limits on the number of entities that can exist.
-- **<red>Avoid</red>** adding unnecessary indexes to prevent hitting storage limits.
+Reference: [Forge Custom Entity Store](https://developer.atlassian.com/platform/forge/storage-reference/entities-api/) and [platform limits](https://developer.atlassian.com/platform/forge/platform-quotas-and-limits/).
+
+- **Do:** use **Entity Storage** when you need to index properties for querying purposes.
+- **Do:** use **Key-Value Storage**, whether it's storing strings or JSON, as long as you don't need to index properties.
+- **Avoid:** using **Entity Storage** if you don't need to index on properties, as there are limits on the number of entities that can exist.
+- **Avoid:** adding unnecessary indexes to prevent hitting storage limits.
 
 ### Benefits of Using the Correct Storage
 
@@ -783,7 +786,7 @@ When developing on the Forge platform, it's important to choose between **Forge 
 - Maintain scalability by minimizing unnecessary use of indexed storage.
 
 ```ts
-import { storage } from "@forge/api";
+import { kvs } from "@forge/kvs";
 
 // Store user preferences
 const userPreferences = {
@@ -792,13 +795,13 @@ const userPreferences = {
 };
 
 // Set the user preferences in Key-Value Storage
-await storage.set("user-123-preferences", userPreferences);
+await kvs.set("user-123-preferences", userPreferences);
 
 // Retrieve the user preferences from Key-Value Storage
-const preferences = await storage.get("user-123-preferences");
+const preferences = await kvs.get("user-123-preferences");
 console.log(preferences); // Output: { theme: 'dark', notificationsEnabled: true }
 ```
 
 ## Contact
 
-If you have any feedback, questions, or ideas regarding this style guide, feel free to reach out via email. We'd love to hear from you! [forge@valiantys.com](mailto:forge@valiantys.com)
+If you have feedback, questions, or ideas about this guide, contact [Alisha Robinson](mailto:alisha.robinson@valiantys.com) at [alisha.robinson@valiantys.com](mailto:alisha.robinson@valiantys.com).

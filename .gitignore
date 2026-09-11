@@ -1,1 +1,4 @@
 forge_style_guide_snippet.html
+.DS_Store
+__pycache__/
+*.py[cod]
